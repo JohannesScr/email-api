@@ -3,6 +3,42 @@ const path = require('path');
 
 const sgMail = require('@sendgrid/mail');
 
+const sg_send_promise = (message) => {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+    return new Promise((resolve, reject) => {
+        try {
+            sgMail.send(message);
+        } catch (err) {
+            console.warn('Error: /includes/sendgrid.integration/sendgrid_send_promise', err);
+            reject(err);
+        }
+
+        resolve(message);
+    });
+};
+
+const sg_send = (message) => {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+    try {
+        sgMail.send(message);
+    } catch (err) {
+        console.warn('Error: /includes/sendgrid.integration/sendgrid_send', err);
+        return {
+            code: false,
+            message: 'Unable to send email',
+            field: message,
+            error: err
+        };
+    }
+
+    return {
+        code: true,
+        message: 'Email sent successfully'
+    };
+};
+
 const test_mail = (req, res) => {
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -29,6 +65,7 @@ const test_mail = (req, res) => {
 };
 
 module.exports = {
-    sgMail,
-    test_mail
+    test_mail,
+    sg_send_promise,
+    sg_send
 };

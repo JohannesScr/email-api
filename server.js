@@ -8,6 +8,7 @@ const {test_mail} = require('./includes/sendgrid.integration');
 
 // ROUTES
 const {post_token, put_token, patch_token, get_token} = require('./routes/token/token');
+const {send_email} = require('./routes/email_log/email_log');
 
 let app = express();
 let PORT = process.env.PORT;
@@ -22,26 +23,6 @@ app.use(check);
 
 // ########### ROUTES
 
-const gen = (req, res) => {
-    console.log(req.method);
-    console.log(req.url);
-    console.log(req.headers);
-
-    if (req.hasOwnProperty('body'))
-        console.log(req.body);
-
-    res.send({
-        status: 'successful',
-        method: req.method
-    })
-};
-
-app.post('/post', gen);
-app.put('/put', gen);
-app.patch('/patch', gen);
-app.get('/get', gen);
-app.delete('/delete', gen);
-
 // TEST EMAIL
 app.post('/test', test_mail);
 
@@ -51,6 +32,9 @@ app.put('/token', put_token);
 app.patch('/token', patch_token);
 app.get('/token', get_token);
 app.get('/token/:id', get_token);
+
+// SEND SINGLE EMAIL
+app.post('/send_email', send_email);
 
 // ERROR HANDLING
 app.use((err, req, res, next) => {
