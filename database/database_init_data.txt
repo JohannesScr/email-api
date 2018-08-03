@@ -1,0 +1,60 @@
+-- ########### tb_token
+INSERT INTO tb_token (token_code, api_name, api_key) VALUES ('abc123', 'postman', 'postman-key');
+
+
+-- ########### tb_status
+INSERT INTO tb_status (status_code, status_name, description) VALUES ('PENDING', 'pending', 'The email is waiting to be approved.');
+INSERT INTO tb_status (status_code, status_name, description) VALUES ('SCHEDULED', 'scheduled', 'The email is scheduled and waiting for the dispatch date.');
+INSERT INTO tb_status (status_code, status_name, description) VALUES ('SENT', 'sent', 'The email has been sent successfully.');
+INSERT INTO tb_status (status_code, status_name, description) VALUES ('REJECTED', 'rejected', 'The email has not been sent for some reason.');
+INSERT INTO tb_status (status_code, status_name, description) VALUES ('OUTBOX', 'outbox', 'The email has been triggered to be sent, just waiting for the send trigger.');
+INSERT INTO tb_status (status_code, status_name, description) VALUES ('SUPERSEDED', 'superseded', 'The email has been overwritten with a newer version.');
+
+
+-- ########### tb_template
+INSERT INTO tb_template (template_code, template_name, template_data) VALUES ('postman_test', 'postman_test', '<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        body {
+
+        }
+        header {
+            padding: 10px;
+            background: aliceblue;
+        }
+        main {
+            padding: 10px;
+            background: gray;
+        }
+        footer {
+            padding: 10px;
+            background: lightslategrey;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h2>Test email</h2>
+</header>
+<main>
+    <p>Here is some content</p>
+    <p>Some more</p>
+</main>
+<footer>
+    <div>
+        <p>All rights reserved.</p>
+        <p>by Johannes Scribante</p>
+    </div>
+</footer>
+</body>
+</html>');
+
+
+
+-- ########### tb_

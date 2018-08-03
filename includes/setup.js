@@ -10,6 +10,9 @@ function setup () {
     Object.keys(config).forEach(key => {
         process.env[key] = config[key];
     });
+
+    // create database connection
+    // init_db();
 }
 
 module.exports = {

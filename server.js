@@ -1,12 +1,11 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const {setup} = require('./includes/setup');
 const {log_url, build_workflow_object} = require('./includes/server.init');
 const {test_mail} = require('./includes/sendgrid.integration');
 
-// initialise setup of environment
-setup();
+// ROUTES
+const {post_token, put_token, patch_token, get_token} = require('./routes/token/token');
 
 let app = express();
 let PORT = process.env.PORT;
@@ -43,6 +42,14 @@ app.delete('/delete', gen);
 
 // TEST EMAIL
 app.post('/test', test_mail);
+
+// TOKENS
+app.post('/token', post_token);
+app.put('/token', put_token);
+app.patch('/token', patch_token);
+app.get('/token', get_token);
+app.get('/token/:id', get_token);
+
 
 app.listen(PORT, () => {
     console.log(`Express app listening on port ${PORT}`);

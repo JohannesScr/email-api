@@ -1,45 +1,45 @@
 DROP TABLE IF EXISTS tb_token CASCADE;
 CREATE TABLE IF NOT EXISTS tb_token (
   id            SERIAL PRIMARY KEY,
-  token_code      VARCHAR(32),
+  token_code    VARCHAR(32) UNIQUE,
   api_name      VARCHAR(128),
   api_key       VARCHAR(64),
   creation_date TIMESTAMP DEFAULT current_timestamp(0),
   update_date   TIMESTAMP DEFAULT current_timestamp(0)
 );
 
-DROP TABLE IF EXISTS tb_email_log CASCADE;
-CREATE TABLE IF NOT EXISTS tb_email_log (
-  id            SERIAL PRIMARY KEY,
-  template_code   INTEGER REFERENCES tb_template (template_code),
-  token_code      INTEGER REFERENCES tb_token (token_code),
-  email_from    VARCHAR(256),
-  email_to      VARCHAR(256),
-  status_code     INTEGER REFERENCES tb_status (status_code),
-  action_date   VARCHAR(256),
-  email_cc      VARCHAR(256),
-  email_bcc     VARCHAR(256),
-  email_data    JSONB,
+DROP TABLE IF EXISTS tb_status CASCADE;
+CREATE TABLE IF NOT EXISTS tb_status (
+  id           SERIAL PRIMARY KEY,
+  status_code  VARCHAR(32) UNIQUE,
+  status_name  VARCHAR(64),
+  description  VARCHAR(256),
   created_date TIMESTAMP DEFAULT current_timestamp(0),
-  updated_date   TIMESTAMP DEFAULT current_timestamp(0)
+  updated_date TIMESTAMP DEFAULT current_timestamp(0)
 );
 
 DROP TABLE IF EXISTS tb_template CASCADE;
 CREATE TABLE IF NOT EXISTS tb_template (
   id            SERIAL PRIMARY KEY,
-  template_code VARCHAR(32),
+  template_code VARCHAR(32) UNIQUE,
   template_name VARCHAR(64),
   template_data TEXT,
-  created_date    TIMESTAMP DEFAULT current_timestamp(0),
-  updated_date    TIMESTAMP DEFAULT current_timestamp(0)
+  created_date  TIMESTAMP DEFAULT current_timestamp(0),
+  updated_date  TIMESTAMP DEFAULT current_timestamp(0)
 );
 
-DROP TABLE IF EXISTS tb_status CASCADE;
-CREATE TABLE IF NOT EXISTS tb_status (
-  id SERIAL PRIMARY KEY,
-  status_code VARCHAR(32),
-  status_name VARCHAR(64),
-  description VARCHAR(256),
-  created_date TIMESTAMP DEFAULT current_timestamp(0),
-  updated_date TIMESTAMP DEFAULT current_timestamp(0)
+DROP TABLE IF EXISTS tb_email_log CASCADE;
+CREATE TABLE IF NOT EXISTS tb_email_log (
+  id            SERIAL PRIMARY KEY,
+  template_code VARCHAR(32) REFERENCES tb_template (template_code),
+  token_code    VARCHAR(32) REFERENCES tb_token (token_code),
+  email_from    VARCHAR(256),
+  email_to      VARCHAR(256),
+  status_code   VARCHAR(32) REFERENCES tb_status (status_code),
+  action_date   VARCHAR(256),
+  email_cc      VARCHAR(256),
+  email_bcc     VARCHAR(256),
+  email_data    JSONB,
+  created_date  TIMESTAMP DEFAULT current_timestamp(0),
+  updated_date  TIMESTAMP DEFAULT current_timestamp(0)
 );
