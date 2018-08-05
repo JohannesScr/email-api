@@ -1,18 +1,34 @@
 -- ########### tb_token
-INSERT INTO tb_token (token_code, api_name, api_key) VALUES ('abc123', 'postman', 'postman-key');
 
+INSERT INTO tb_token (token_code, api_name, api_key, active) VALUES ('super', 'super', 'super-key', TRUE);
+INSERT INTO tb_token (token_code, api_name, api_key, active) VALUES ('abc123', 'postman', 'postman-key', TRUE);
 
 -- ########### tb_status
-INSERT INTO tb_status (status_code, status_name, description) VALUES ('PENDING', 'pending', 'The email is waiting to be approved.');
-INSERT INTO tb_status (status_code, status_name, description) VALUES ('SCHEDULED', 'scheduled', 'The email is scheduled and waiting for the dispatch date.');
-INSERT INTO tb_status (status_code, status_name, description) VALUES ('SENT', 'sent', 'The email has been sent successfully.');
-INSERT INTO tb_status (status_code, status_name, description) VALUES ('REJECTED', 'rejected', 'The email has not been sent for some reason.');
-INSERT INTO tb_status (status_code, status_name, description) VALUES ('OUTBOX', 'outbox', 'The email has been triggered to be sent, just waiting for the send trigger.');
-INSERT INTO tb_status (status_code, status_name, description) VALUES ('SUPERSEDED', 'superseded', 'The email has been overwritten with a newer version.');
 
+INSERT INTO tb_status (status_code, status_name, description, active)
+VALUES ('PENDING', 'pending', 'The email is waiting to be approved.', TRUE);
+
+INSERT INTO tb_status (status_code, status_name, description, active)
+VALUES ('SCHEDULED', 'scheduled', 'The email is scheduled and waiting for the dispatch date.', TRUE);
+
+INSERT INTO tb_status (status_code, status_name, description, active)
+VALUES ('SENT', 'sent', 'The email has been sent successfully.', TRUE);
+
+INSERT INTO tb_status (status_code, status_name, description, active)
+VALUES ('REJECTED', 'rejected', 'The email has not been sent for some reason.', TRUE);
+
+INSERT INTO tb_status (status_code, status_name, description, active)
+VALUES ('OUTBOX', 'outbox', 'The email has been triggered to be sent, just waiting for the send trigger.', TRUE);
+
+INSERT INTO tb_status (status_code, status_name, description, active)
+VALUES ('SUPERSEDED', 'superseded', 'The email has been overwritten with a newer version.', TRUE);
 
 -- ########### tb_template
-INSERT INTO tb_template (template_code, template_name, template_data) VALUES ('postman_test', 'postman_test', '<!DOCTYPE html>
+
+INSERT INTO tb_template (template_code, template_name, template_data, active) VALUES (
+  'postman_test',
+  'postman_test',
+  '<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -53,8 +69,5 @@ INSERT INTO tb_template (template_code, template_name, template_data) VALUES ('p
     </div>
 </footer>
 </body>
-</html>');
-
-
-
--- ########### tb_
+</html>',
+  TRUE);

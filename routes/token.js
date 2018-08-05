@@ -1,6 +1,6 @@
 /* declare */
 const squel = require('squel').useFlavour('postgres');
-const {db} = require('./../../database/database');
+const {db} = require('../database/database');
 /* HELPER FUNCTIONS */
 
 

@@ -1,7 +1,7 @@
 const squel = require('squel').useFlavour('postgres');
-const {db} = require('./../../database/database');
-const {sg_send, sg_send_promise} = require('./../../includes/sendgrid.integration');
-const {format_date} = require('./../../extends/utils');
+const {db} = require('../database/database');
+const {sg_send, sg_send_promise} = require('../includes/sendgrid.integration');
+const {format_date} = require('../extends/utils');
 
 /* HELPER FUNCTIONS */
 
@@ -70,17 +70,17 @@ const build_email = (req) => {
 
         req.wf.data.email_log = {
             template_code: req.body.template_code,
-            token_code: req.token_code,
-            email_from: req.body.from,
-            email_to: req.body.to,
+            token_code: req.token.token_code,
+            email_from: JSON.stringify(req.body.from),
+            email_to: JSON.stringify(req.body.to),
             status_code: req.body.immediate ? 'OUTBOX' : 'SCHEDULED',
             action_date: req.body.immediate ? format_date(new Date()) : req.body.action_date,
             email_data: req.body.data
         };
 
         req.wf.data.message = {
-            to: req.body.to,
-            from: req.body.from,
+            to: req.body.to[0],
+            from: req.body.from[0],
             subject: req.body.subject,
             text: req.body.text,
             html: req.wf.data.template.template_data,
@@ -131,6 +131,32 @@ const single_email_log = (req) => {
                 });
     });
 };
+
+// post
+/*
+* method post
+* uri /mail/send
+* personalizations {}
+*   to []
+*       email
+*       name
+*   cc []
+*       email
+*       name
+*   bcc []
+*       email
+*       name
+* from {}
+*   email
+*   name
+* reply_to {}
+*   email
+*   name
+* content []
+*   type 'text/text' 'text/html
+*   value
+* attachments
+* */
 
 /* PRIMARY FUNCTIONS */
 /**

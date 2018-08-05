@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .box {
+            width: 300px;
+            height: 300px;
+        }
+    </style>
+</head>
+<body>
+<input id="input_html" class="box" type="text">
+<button id="convert" onclick="convert()">convert</button>
+<pre id="preview" class="box"></pre>
+
+<script>
+    function convert (event) {
+        // event.preventDefault();
+
+        let html = document.getElementById('input_html').value;
+        let preview = document.getElementById('preview');
+        html = html.replace(/"/g, '\\"');
+        console.log(html);
+        preview.innerText = html;
+    }
+</script>
+</body>
+</html>

@@ -15,6 +15,9 @@ const {db} = require('./../database/database');
  * */
 const verify_token = (req, res, next) => {
     // find the token in the database
+    const blue = '\x1b[0;34m';
+    const nc = '\x1b[0m';
+
     let sql = squel.select()
             .from('tb_token')
             .where('api_key =?', req.headers['x-api-key'])
@@ -22,15 +25,18 @@ const verify_token = (req, res, next) => {
 
     db.one(sql.text, sql.values)
             .then(token => {
-                const blue = '\x1b[0;34m';
-                const nc = '\x1b[0m';
                 console.log(`###> ${req.method} ${blue}${token.api_name}${nc} ${blue}${req.url}${nc}`);
 
-                req.token_code = token.token_code;
-                req.api_name = token.api_name;
+                req.token = {
+                    token_id: token.id,
+                    token_code: token.token_code,
+                    token_name: token.api_name,
+                };
+
                 next();
             })
             .catch(err => {
+                console.log(`###> ${req.method} ${blue}${req.url}${nc}`);
                 console.warn('Error: Unable to find token or too duplicate token', err);
                 req.wf.http_code = 401;
                 req.wf.message = 'Unauthorised token is incorrect';
