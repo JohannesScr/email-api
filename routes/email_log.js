@@ -1,6 +1,6 @@
 const squel = require('squel').useFlavour('postgres');
 const {db} = require('../database/database');
-const {sg_send, sg_send_promise} = require('../includes/sendgrid.integration');
+const {sg_post} = require('../includes/sendgrid.integration');
 const {format_date} = require('../extends/utils');
 
 /* HELPER FUNCTIONS */
@@ -17,7 +17,7 @@ const create_email_log = (data) => {
             .toParam();
 
     return new Promise((resolve, reject) => {
-        db.any(sql.text, sql.values)
+        db.one(sql.text, sql.values)
                 .then(template => {
                     console.timeEnd('/routes/email_log/create_email_log');
                     resolve(template);
@@ -30,6 +30,31 @@ const create_email_log = (data) => {
     });
 };
 
+
+/**
+ * */
+const update_email_log_status = (status, email_log_id) => {
+    console.time('/routes/email_log/update_email_log_status');
+
+    let sql = squel.update()
+            .table('tb_email_log')
+            .set('status_code', status)
+            .where('id = ?', email_log_id)
+            .toParam();
+
+    db.none(sql.text, sql.values)
+            .then(() => {
+                console.log(`Email log status code successfully update: ${status} for log id: ${email_log_id}`);
+                console.timeEnd('/routes/email_log/update_email_log_status');
+            })
+            .catch(err => {
+                console.warn('Error: email_log/update_email_log_status');
+                console.warn(JSON.stringify(err, null, 4));
+                console.warn(`Unable to update email log status code: ${status} for log id: ${email_log_id}`);
+                console.timeEnd('/routes/email_log/update_email_log_status');
+            });
+};
+
 /* SECONDARY FUNCTIONS */
 /**
  * */
@@ -38,12 +63,14 @@ const fetch_template = (req) => {
     let template_code = req.body.template_code;
 
     let sql = squel.select()
+            .field('template_type', 'type')
+            .field('template_data', 'value')
             .from('tb_template')
             .where('template_code =?', template_code)
             .toParam();
 
     return new Promise((resolve, reject) => {
-        db.one(sql.text, sql.values)
+        db.many(sql.text, sql.values)
                 .then(template => {
                     console.timeEnd('/routes/email_log/fetch_template');
                     req.wf.data.template = template;
@@ -73,18 +100,35 @@ const build_email = (req) => {
             token_code: req.token.token_code,
             email_from: JSON.stringify(req.body.from),
             email_to: JSON.stringify(req.body.to),
+            email_subject: req.body.subject,
             status_code: req.body.immediate ? 'OUTBOX' : 'SCHEDULED',
             action_date: req.body.immediate ? format_date(new Date()) : req.body.action_date,
             email_data: req.body.data
         };
 
         req.wf.data.message = {
-            to: req.body.to[0],
-            from: req.body.from[0],
-            subject: req.body.subject,
-            text: req.body.text,
-            html: req.wf.data.template.template_data,
+            personalizations: [
+                {
+                    to: req.body.to,
+                    subject: req.body.subject
+                }
+            ],
+            from: req.body.from,
+            content: req.wf.data.template,
         };
+
+        if (req.body.hasOwnProperty('reply_to')) {
+            req.wf.data.message.reply_to = req.body.reply_to;
+            req.wf.data.email_log.email_reply_to = JSON.stringify(req.body.reply_to);
+        }
+        if (req.body.hasOwnProperty('cc')) {
+            req.wf.data.message.personalizations.cc = req.body.cc;
+            req.wf.data.email_log.email_cc = JSON.stringify(req.body.cc);
+        }
+        if (req.body.hasOwnProperty('bcc')) {
+            req.wf.data.message.personalizations.bcc = req.body.bcc;
+            req.wf.data.email_log.email_bcc = JSON.stringify(req.body.bcc);
+        }
 
         console.timeEnd('/routes/email_log/build_email');
         resolve(req);
@@ -102,21 +146,31 @@ const single_email_log = (req) => {
                     console.log('Email Log:', email_log);
 
                     if (req.body.immediate) {
-                        let result = sg_send(req.wf.data.message);
-                        console.log(result.message);
 
-                        console.timeEnd('/routes/email_log/single_email_log');
-                        if (result.code) {
-                            req.wf.message = result.message;
-                            resolve(req);
-                        } else {
-                            req.wf.errors.push({
-                                message: 'Unable to create email log',
-                                error: result.error
-                            });
-                            reject(req);
-                        }
+                        let message = req.wf.data.message;
+                        sg_post(message)
+                                .then(data => {
+                                    console.log(data);
+                                    req.wf.message = data.status;
 
+                                    update_email_log_status('SENT', email_log.id);
+
+                                    console.timeEnd('/routes/email_log/single_email_log');
+                                    resolve(req);
+                                })
+                                .catch(err => {
+                                    console.warn('Error: /routes/email_log/single_email_log');
+                                    console.warn(err);
+                                    req.wf.message = err.status;
+                                    req.wf.errors.push({
+                                        message: 'Unable to send email',
+                                    });
+
+                                    update_email_log_status('REJECTED', email_log.id);
+
+                                    console.timeEnd('/routes/email_log/single_email_log');
+                                    reject(req);
+                                });
                     }
                 })
                 .catch(err => {
@@ -132,45 +186,27 @@ const single_email_log = (req) => {
     });
 };
 
-// post
-/*
-* method post
-* uri /mail/send
-* personalizations {}
-*   to []
-*       email
-*       name
-*   cc []
-*       email
-*       name
-*   bcc []
-*       email
-*       name
-* from {}
-*   email
-*   name
-* reply_to {}
-*   email
-*   name
-* content []
-*   type 'text/text' 'text/html
-*   value
-* attachments
-* */
-
 /* PRIMARY FUNCTIONS */
 /**
  * */
 const send_email = (req, res, next) => {
+    console.time('/routes/email_log/send_email');
+
     fetch_template(req)
             .then(build_email)
             .then(single_email_log)
-            .then(() => {
+            .then((req) => {
+
+                delete req.wf.data.template;
+                delete req.wf.data.message;
+                delete req.wf.data.email_log;
+
                 console.log('Email sent successfully');
+                console.timeEnd('/routes/email_log/send_email');
                 res.send(req.wf);
             })
             .catch(err => {
-                console.warn('Error: /routes/email_log/send_email', err);
+                console.warn('Error: /routes/email_log/send_email');
 
                 req.wf.http_code = 500;
                 req.wf.message = 'Unable to add to email log';
@@ -183,8 +219,7 @@ const send_email = (req, res, next) => {
                 }
                 req.wf.errors.push(error);
 
-
-                console.timeEnd('routes/email_log/send_email');
+                console.timeEnd('/routes/email_log/send_email');
                 console.log('<### Error: send_email');
                 res.status(req.wf.http_code).send(req.wf);
             });

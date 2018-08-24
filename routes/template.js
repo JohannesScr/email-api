@@ -13,6 +13,7 @@ const build_template = (req) => {
             template_code: req.wf.data.template_code,
             template_name: req.body.template_name,
             description: req.body.description,
+            template_type: req.body.template_type,
             template_data: req.body.template_data,
             active: req.body.active || true
         };

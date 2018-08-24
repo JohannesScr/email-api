@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS tb_template (
   template_code VARCHAR(32) UNIQUE,
   template_name VARCHAR(64),
   description   VARCHAR(256),
+  template_type VARCHAR(256),
   template_data TEXT,
   active        BOOLEAN,
   created_date  TIMESTAMP DEFAULT current_timestamp(0),
@@ -52,19 +53,21 @@ CREATE TABLE IF NOT EXISTS tb_template (
 
 DROP TABLE IF EXISTS tb_email_log CASCADE;
 CREATE TABLE IF NOT EXISTS tb_email_log (
-  id            SERIAL PRIMARY KEY,
-  template_code VARCHAR(32) REFERENCES tb_template (template_code),
-  token_code    VARCHAR(32) REFERENCES tb_token (token_code),
-  email_from    JSONB,
-  email_to      JSONB,
-  status_code   VARCHAR(32) REFERENCES tb_status (status_code),
-  action_date   VARCHAR(256),
-  email_cc      JSONB,
-  email_bcc     JSONB,
-  email_data    JSONB,
-  active        BOOLEAN,
-  created_date  TIMESTAMP DEFAULT current_timestamp(0),
-  updated_date  TIMESTAMP DEFAULT current_timestamp(0)
+  id             SERIAL PRIMARY KEY,
+  template_code  VARCHAR(32) REFERENCES tb_template (template_code),
+  token_code     VARCHAR(32) REFERENCES tb_token (token_code),
+  email_from     JSONB,
+  email_to       JSONB,
+  status_code    VARCHAR(32) REFERENCES tb_status (status_code),
+  action_date    VARCHAR(256),
+  email_subject  VARCHAR(256),
+  email_cc       JSONB,
+  email_bcc      JSONB,
+  email_reply_to JSONB,
+  email_data     JSONB,
+  active         BOOLEAN,
+  created_date   TIMESTAMP DEFAULT current_timestamp(0),
+  updated_date   TIMESTAMP DEFAULT current_timestamp(0)
 );
 
 -- ################################################## --
@@ -74,7 +77,7 @@ CREATE TABLE IF NOT EXISTS tb_email_log (
 CREATE OR REPLACE FUNCTION set_updated_date_column()
   RETURNS TRIGGER LANGUAGE plpgsql AS $$
 BEGIN
-  NEW.updated_on = now();
+  NEW.updated_date = now();
   RETURN NEW;
 END;
 $$;

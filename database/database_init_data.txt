@@ -25,9 +25,10 @@ VALUES ('SUPERSEDED', 'superseded', 'The email has been overwritten with a newer
 
 -- ########### tb_template
 
-INSERT INTO tb_template (template_code, template_name, template_data, active) VALUES (
+INSERT INTO tb_template (template_code, template_name, template_type, template_data, active) VALUES (
   'postman_test',
   'postman_test',
+  'text/html',
   '<!DOCTYPE html>
 <html lang="en">
 <head>

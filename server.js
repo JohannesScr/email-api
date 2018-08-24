@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const {log_url, build_workflow_object} = require('./includes/server.init');
 const {check} = require('./includes/authentication');
 
-const {test_mail} = require('./includes/sendgrid.integration');
+const {test_mail, test_mail_post} = require('./includes/sendgrid.integration');
 
 // ROUTES
 const {post_token, put_token, patch_token, get_token} = require('./routes/token');
@@ -26,6 +26,7 @@ app.use(check);
 
 // TEST EMAIL
 app.post('/test', test_mail);
+app.post('/test_post', test_mail_post);
 
 // TOKENS
 app.post('/token', post_token);
