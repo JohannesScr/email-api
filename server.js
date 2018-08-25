@@ -9,7 +9,7 @@ const {test_mail, test_mail_post} = require('./includes/sendgrid.integration');
 // ROUTES
 const {post_token, put_token, patch_token, get_token} = require('./routes/token');
 const {post_template, put_template, patch_template, get_template} = require('./routes/template');
-const {send_email} = require('./routes/email_log');
+const {single_email} = require('./routes/email_log');
 
 let app = express();
 let PORT = process.env.PORT;
@@ -43,7 +43,14 @@ app.get('/template', get_template);
 app.get('/template/:id', get_template);
 
 // SEND SINGLE EMAIL
-app.post('/send_email', send_email);
+app.post('/single_email', single_email);
+
+// SEND BATCH EMAILS
+app.post('/batch_email', (req, res) => {
+    console.log('/batch_email: WIP');
+    req.wf.message = 'WIP';
+    res.send(req.wf)
+});
 
 // ERROR HANDLING
 app.use((err, req, res, next) => {
