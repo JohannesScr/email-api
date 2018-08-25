@@ -4,7 +4,12 @@ const {sg_post} = require('../includes/sendgrid.integration');
 const {format_date} = require('../extends/utils');
 
 /* HELPER FUNCTIONS */
-
+/** @function create_email_log
+ * @param data
+ * @description given properly formatted email log data, the data is
+ * inserted into the DB either as SCHEDULED to be sent of on a given
+ * date and time, or OUTBOX when it is to be sent immediately.
+ * */
 const create_email_log = (data) => {
     console.time('/routes/email_log/create_email_log');
 
@@ -31,7 +36,11 @@ const create_email_log = (data) => {
 };
 
 
-/**
+/** @function update_email_log_status
+ * @param status
+ * @param email_log_id
+ * @description given the status and email_log_id the email log is updated
+ * to the given status.
  * */
 const update_email_log_status = (status, email_log_id) => {
     console.time('/routes/email_log/update_email_log_status');
@@ -55,8 +64,14 @@ const update_email_log_status = (status, email_log_id) => {
             });
 };
 
+
 /* SECONDARY FUNCTIONS */
-/**
+/** @function fetch_template
+ * @param req
+ * @description based on the template_code passed in the request the
+ * template data and template type is fetched from the DB.
+ *
+ * If it is not found, as error is thrown.
  * */
 const fetch_template = (req) => {
     console.time('/routes/email_log/fetch_template');
@@ -89,7 +104,11 @@ const fetch_template = (req) => {
     });
 };
 
-/**
+
+/** @function build_email
+ * @param req
+ * @description builds both the email log and the message objects to be
+ * saved and sent.
  * */
 const build_email = (req) => {
     console.time('/routes/email_log/build_email');
@@ -135,7 +154,11 @@ const build_email = (req) => {
     });
 };
 
-/**
+
+/** @function single_email_log
+ * @param req
+ * @description creates an email log. if the message is to be sent
+ * immediately then it is sent immediately and the status is updated to SENT.
  * */
 const single_email_log = (req) => {
     console.time('/routes/email_log/single_email_log');
@@ -145,6 +168,7 @@ const single_email_log = (req) => {
                 .then(email_log => {
                     console.log('Email Log:', email_log);
 
+                    req.wf.data.email_log = email_log;
                     if (req.body.immediate) {
 
                         let message = req.wf.data.message;
@@ -171,6 +195,8 @@ const single_email_log = (req) => {
                                     console.timeEnd('/routes/email_log/single_email_log');
                                     reject(req);
                                 });
+                    } else {
+                        resolve(req);
                     }
                 })
                 .catch(err => {
@@ -186,11 +212,25 @@ const single_email_log = (req) => {
     });
 };
 
+
 /* PRIMARY FUNCTIONS */
-/**
+/** @function single_email
+ * @param req
+ * @param res
+ * @param next
+ * @description creates and/or sends an immediate email for a SINGLE email.
  * */
-const send_email = (req, res, next) => {
+const single_email = (req, res, next) => {
     console.time('/routes/email_log/send_email');
+
+    if (req.body.immediate) {
+
+    } else if (!req.body.action_date) {
+        res.status(400).send({
+            message: 'Missing fields',
+            error: 'action date is a required field'
+        })
+    }
 
     fetch_template(req)
             .then(build_email)
@@ -199,7 +239,6 @@ const send_email = (req, res, next) => {
 
                 delete req.wf.data.template;
                 delete req.wf.data.message;
-                delete req.wf.data.email_log;
 
                 console.log('Email sent successfully');
                 console.timeEnd('/routes/email_log/send_email');
@@ -225,7 +264,8 @@ const send_email = (req, res, next) => {
             });
 };
 
+
 /* EXPORTED FUNCTIONS */
 module.exports = {
-    send_email
+    single_email
 };
