@@ -20,7 +20,7 @@ const verify_token = (req, res, next) => {
 
     let sql = squel.select()
             .from('tb_token')
-            .where('api_key =?', req.headers['x-api-key'])
+            .where('api_key = ?', req.headers['x-api-key'])
             .toParam();
 
     db.one(sql.text, sql.values)
@@ -67,7 +67,6 @@ const verify_headers = (req, res, next) => {
         req.wf.http_code = 401;
         req.wf.message = 'Please check that your request headers are correct';
         next(req);
-        // return res.status(req.wf.http_code).send(req.wf);
     }
 };
 
